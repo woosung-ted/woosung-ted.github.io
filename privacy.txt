@@ -1,0 +1,19 @@
+--------------------------------------------------
+[Privacy Policy]
+
+woosung values your personal information and complies with relevant data protection laws.
+
+1. Collection and Use of Personal Information
+This application (DupRemove) does not directly collect, store, or transmit any personal information of users.
+
+2. Collection of Personal Information by Third-Party Services
+This application uses the Google AdMob SDK to display advertisements. In this process, Google may automatically collect non-personal information, such as device identifiers (Advertising ID, etc.), to provide personalized ads and analytics. This information is managed in accordance with Google's Privacy Policy.
+- Google AdMob Privacy Policy: https://policies.google.com/privacy
+
+3. Retention and Destruction of Personal Information
+Since this application does not directly collect personal information, it does not retain any personal data.
+
+4. Contact Information
+If you have any questions regarding this privacy policy, please contact us via the GitHub profile or developer email.
+
+Effective Date: July 3, 2026

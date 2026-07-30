@@ -75,15 +75,19 @@ function hasPath(start, target, candidateWalls) {
 
 function buildWalls() {
   if (modeEl.value !== 'level') return [];
-  const count = Math.min(2 + (level - 1) * 2, 30);
+  const segmentCount = Math.min(10, Math.max(1, Math.ceil((2 + (level - 1) * 2) / 2)));
+  const wallDirs = [dirs.right, dirs.down];
   let safe = [];
   for (let attempt = 0; attempt < 200; attempt += 1) {
     const candidate = [];
-    while (candidate.length < count) {
-      const point = { x: Math.floor(Math.random() * size), y: Math.floor(Math.random() * size) };
-      if (!snake.some((part) => same(part, point)) && !same(point, food) && !candidate.some((wall) => same(wall, point))) candidate.push(point);
+    for (let segment = 0; segment < segmentCount; segment += 1) {
+      const length = 2 + Math.floor(Math.random() * 3);
+      const direction = wallDirs[Math.floor(Math.random() * wallDirs.length)];
+      const start = { x: Math.floor(Math.random() * size), y: Math.floor(Math.random() * size) };
+      const blocks = Array.from({ length }, (_, index) => ({ x: start.x + direction.x * index, y: start.y + direction.y * index }));
+      if (blocks.every((point) => point.x >= 0 && point.x < size && point.y >= 0 && point.y < size && !snake.some((part) => same(part, point)) && !same(point, food) && !candidate.some((wall) => same(wall, point)))) candidate.push(...blocks);
     }
-    if (hasPath(snake[0], food, candidate)) {
+    if (candidate.length && hasPath(snake[0], food, candidate)) {
       safe = candidate;
       break;
     }

@@ -15,7 +15,7 @@ const size = 18;
 const cell = canvas.width / size;
 const dirs = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
 const baseDelay = 150;
-let snake, food, golden, walls, dir, nextDir, score, coins, level;
+let snake, food, golden, coinDrop, walls, dir, nextDir, score, coins, level;
 let playing = false;
 let paused = false;
 let moveTimer;
@@ -116,6 +116,7 @@ function reset() {
   walls = [];
   food = emptyCell();
   golden = null;
+  coinDrop = null;
   playing = false;
   paused = false;
   pauseBtn.disabled = true;
@@ -159,23 +160,22 @@ function grow() {
 
 function move() {
   if (!playing || paused) return;
+  coinDrop = null;
   dir = nextDir;
   const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
-  if (modeEl.value === 'free') {
-    head.x = (head.x + size) % size;
-    head.y = (head.y + size) % size;
-  } else if (head.x < 0 || head.x >= size || head.y < 0 || head.y >= size) {
+  if (head.x < 0 || head.x >= size || head.y < 0 || head.y >= size) {
     return gameOver('WALL HIT — GAME OVER');
   }
   if (walls.some((wall) => same(wall, head))) return gameOver('WALL HIT — GAME OVER');
-  if (snake.some((part) => same(part, head))) return gameOver('SELF HIT — GAME OVER');
+  const ate = same(head, food);
+  const body = ate ? snake : snake.slice(0, -1);
+  if (body.some((part) => same(part, head))) return gameOver('SELF HIT — GAME OVER');
 
   snake.unshift(head);
-  const ate = same(head, food);
   if (ate) {
     score += 10;
     beep(520);
-    if (Math.random() < .1) { coins += 1; beep(880, .12, 'triangle'); }
+    if (Math.random() < .1) { coins += 1; coinDrop = { ...head }; beep(880, .12, 'triangle'); }
     food = emptyCell();
     if (Math.random() < .12) golden = emptyCell();
     const nextLevel = 1 + Math.floor(score / 50);
@@ -235,15 +235,31 @@ function render() {
     ctx.moveTo(0, i * cell); ctx.lineTo(canvas.width, i * cell);
     ctx.stroke();
   }
-  walls.forEach((wall) => draw(wall, '#7c1dfd'));
-  if (food) draw(food, '#ff2d95');
-  if (golden) draw(golden, '#ffd300');
-  snake.forEach((part, index) => draw(part, index ? '#2bff88' : '#00e5ff'));
+  walls.forEach((wall) => draw(wall, '#7c1dfd', 'square'));
+  if (food) draw(food, '#ff2d95', 'circle');
+  if (golden) draw(golden, '#ffd300', 'circle');
+  if (coinDrop) draw(coinDrop, '#ffd300', 'triangle');
+  snake.forEach((part, index) => draw(part, index ? '#2bff88' : '#00e5ff', 'square'));
 }
 
-function draw(point, color) {
+function draw(point, color, shape = 'square') {
+  const centerX = point.x * cell + cell / 2;
+  const centerY = point.y * cell + cell / 2;
   ctx.fillStyle = color;
-  ctx.fillRect(point.x * cell + 2, point.y * cell + 2, cell - 4, cell - 4);
+  if (shape === 'circle') {
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, cell / 2 - 3, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (shape === 'triangle') {
+    ctx.beginPath();
+    ctx.moveTo(centerX, point.y * cell + 3);
+    ctx.lineTo(point.x * cell + cell - 3, point.y * cell + cell - 3);
+    ctx.lineTo(point.x * cell + 3, point.y * cell + cell - 3);
+    ctx.closePath();
+    ctx.fill();
+  } else {
+    ctx.fillRect(point.x * cell + 2, point.y * cell + 2, cell - 4, cell - 4);
+  }
 }
 
 function setDirection(name) {

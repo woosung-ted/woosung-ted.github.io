@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>SnakeByte — Old retro funny game</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="logo" href="#top">SNAKEBYTE</a>
+    <nav aria-label="Main navigation"><a href="#about">ABOUT</a><a href="#games">GAMES</a><a href="https://github.com/woosung-ted/woosung-ted.github.io" target="_blank" rel="noreferrer">GITHUB</a></nav>
+  </header>
+
+  <main id="top">
+    <section class="hero" id="about">
+      <p class="eyebrow">TED THE ENGINEER PRESENTS</p>
+      <h1>OLD RETRO<br>FUNNY GAME</h1>
+      <p>One byte at a time. A tiny arcade corner built with HTML5, CSS and JavaScript.</p>
+      <a class="button" href="#games">PLAY SNAKEBYTE</a>
+    </section>
+
+    <section class="panel intro">
+      <div><p class="eyebrow">PROJECT</p><h2>SnakeByte</h2><p>Classic snake energy, neon pixels, and silly little bytes. No account. No database. Just play.</p></div>
+      <div><p class="eyebrow">BUILT WITH</p><p class="stack">HTML5<br>CSS<br>JAVASCRIPT</p></div>
+    </section>
+
+    <section id="games" class="game-section">
+      <div class="section-heading"><div><p class="eyebrow">GAME 001</p><h2>SnakeByte</h2></div><button id="sound-toggle" class="button secondary" type="button" aria-pressed="false">SOUND: ON</button></div>
+      <div class="game-shell panel">
+        <div class="hud"><span>SCORE <b id="score">0</b></span><span>COINS <b id="coins">0</b></span><span>HI <b id="high-score">0</b></span></div>
+        <canvas id="game" width="360" height="360" aria-label="SnakeByte game board"></canvas>
+        <div class="game-actions"><button id="start" class="button" type="button">START</button><button id="use-coin" class="button secondary" type="button">USE COIN</button><label>MODE <select id="mode"><option value="free">FREESTYLE</option><option value="level">LEVEL</option></select></label></div>
+        <div class="dpad" aria-label="Touch controls"><button data-dir="up">▲</button><div><button data-dir="left">◀</button><button data-dir="down">▼</button><button data-dir="right">▶</button></div></div>
+        <p id="status" class="status">Arrow keys / WASD / swipe to move.</p>
+      </div>
+    </section>
+  </main>
+  <footer>© 2026 SnakeByte · <a href="https://github.com/woosung-ted/woosung-ted.github.io" target="_blank" rel="noreferrer">SOURCE ON GITHUB</a></footer>
+  <script src="app.js"></script>
+</body>
+</html>

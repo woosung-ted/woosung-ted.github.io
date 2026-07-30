@@ -10,6 +10,8 @@ const pauseBtn = document.querySelector('#pause');
 const modeEl = document.querySelector('#mode');
 const soundBtn = document.querySelector('#sound-toggle');
 const coinBtn = document.querySelector('#use-coin');
+const licenseBtn = document.querySelector('#music-license');
+const licenseDialog = document.querySelector('#license-dialog');
 
 const size = 18;
 const cell = canvas.width / size;
@@ -293,6 +295,7 @@ function setDirection(name) {
 }
 
 document.addEventListener('keydown', (event) => {
+  if (licenseDialog.open) return;
   const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
   const map = { ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down', ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ' ': 'pause' };
   if (map[key]) {
@@ -328,6 +331,9 @@ soundBtn.addEventListener('click', () => {
   if (sound) { beep(660); if (playing && !paused) playBgm(); }
   else bgm?.pause();
 });
+licenseBtn.addEventListener('click', () => licenseDialog.showModal());
+licenseDialog.addEventListener('click', (event) => { if (event.target === licenseDialog) licenseDialog.close(); });
+licenseDialog.addEventListener('close', () => licenseBtn.focus());
 modeEl.addEventListener('change', () => { if (playing) start(); });
 
 reset();

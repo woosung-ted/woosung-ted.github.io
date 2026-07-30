@@ -27,6 +27,7 @@
 - 자기 충돌: 모든 모드에서 본인 몸통과 충돌 시 게임오버
 - 렌더링: 내부 벽과 Snake body는 네모 block, 일반 Byte는 원형, Golden Byte는 금색 원형, Frog Coin은 삼각형, Snake 머리는 진행 방향을 향하는 빨간색 삼각형으로 표시
 - 배경음악: `assets/blossom.mp3`를 START 후 무한 반복 재생하며, Pause/Game Over/재시작과 SOUND 토글에 맞춰 제어
+- 라이선스 UI: 게임 화면 아래 `Music license`를 표시하며, 클릭 시 `blossom` 출처·CC BY 4.0·WAV→MP3 변환 정보를 native dialog로 표시
 
 ## 4. 아이템 & 파워업
 

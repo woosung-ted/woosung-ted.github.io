@@ -44,4 +44,5 @@
 - 구현·로컬 검증 완료: Claude `claude-sonnet-5` PASS, 2~4 block 가로/세로 혼합 벽·heading 좌측 정렬, HTTP 200, 375/768/1440px overflow 없음, 시작·일시정지·재개·모바일 D-pad 확인.
 - 4단 구성은 Profile(`Ted the engineer`, 삼성전자 무선 사업부)·Project(`SnakeByte`→Game 링크)·Game(`SnakeByte`)·Contact(`https://woosung-ted.github.io`)로 고정. 기술은 HTML5/CSS/JavaScript, GitHub 링크는 공개.
 - 현재 상태: `DEPLOY_APPROVAL_REQUIRED`; CR-008/CR-009 구현 및 CR-010 문서 동기화 완료, 사용자 승인 전 commit·push·배포 금지.
+- CR-011~CR-013 분석/구현: 게임 아래 Music license native dialog와 CC BY 4.0 attribution을 추가하고 Claude 검증 대기.
 - 토큰은 인증이 필요한 Git 작업 때만 사용하며, 값은 출력·로그·코드·문서·Git에 남기지 않음.

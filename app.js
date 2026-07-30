@@ -25,6 +25,7 @@ let speedFactor = 1;
 let swipeStart;
 let sound = true;
 let audio;
+let bgm;
 
 const high = () => Number(localStorage.getItem('snakebyte-high') || 0);
 const saveHigh = () => localStorage.setItem('snakebyte-high', String(Math.max(high(), score)));
@@ -46,6 +47,20 @@ function beep(freq, duration = .08, type = 'square') {
   oscillator.connect(gain).connect(audio.destination);
   oscillator.start();
   oscillator.stop(audio.currentTime + duration);
+}
+
+function playBgm() {
+  if (!sound) return;
+  bgm ??= new Audio('assets/blossom.mp3');
+  bgm.loop = true;
+  bgm.volume = .25;
+  bgm.play().catch(() => {});
+}
+
+function stopBgm() {
+  if (!bgm) return;
+  bgm.pause();
+  bgm.currentTime = 0;
 }
 
 function emptyCell() {
@@ -106,6 +121,7 @@ function reset() {
   clearTimeout(moveTimer);
   clearTimeout(growthTimer);
   clearTimeout(effectTimer);
+  stopBgm();
   speedFactor = 1;
   snake = [{ x: 9, y: 9 }, { x: 8, y: 9 }, { x: 7, y: 9 }];
   dir = dirs.right;
@@ -132,6 +148,7 @@ function start() {
   walls = buildWalls();
   startBtn.textContent = 'RESTART';
   pauseBtn.disabled = false;
+  playBgm();
   scheduleMove();
   scheduleGrowth();
 }
@@ -209,6 +226,7 @@ function gameOver(message) {
   paused = false;
   clearTimeout(moveTimer);
   clearTimeout(growthTimer);
+  stopBgm();
   pauseBtn.disabled = true;
   beep(110, .25, 'sawtooth');
   statusEl.textContent = message;
@@ -221,8 +239,8 @@ function togglePause() {
   paused = !paused;
   pauseBtn.textContent = paused ? 'RESUME' : 'PAUSE';
   statusEl.textContent = paused ? 'PAUSED' : 'Arrow keys / WASD / swipe to move.';
-  if (paused) { clearTimeout(moveTimer); clearTimeout(growthTimer); }
-  else { scheduleMove(); scheduleGrowth(); }
+  if (paused) { clearTimeout(moveTimer); clearTimeout(growthTimer); bgm?.pause(); }
+  else { playBgm(); scheduleMove(); scheduleGrowth(); }
 }
 
 function render() {
@@ -239,10 +257,10 @@ function render() {
   if (food) draw(food, '#ff2d95', 'circle');
   if (golden) draw(golden, '#ffd300', 'circle');
   if (coinDrop) draw(coinDrop, '#ffd300', 'triangle');
-  snake.forEach((part, index) => draw(part, index ? '#2bff88' : '#00e5ff', 'square'));
+  snake.forEach((part, index) => draw(part, index ? '#2bff88' : '#ff3030', index ? 'square' : 'triangle', dir));
 }
 
-function draw(point, color, shape = 'square') {
+function draw(point, color, shape = 'square', direction = dirs.up) {
   const centerX = point.x * cell + cell / 2;
   const centerY = point.y * cell + cell / 2;
   ctx.fillStyle = color;
@@ -252,9 +270,13 @@ function draw(point, color, shape = 'square') {
     ctx.fill();
   } else if (shape === 'triangle') {
     ctx.beginPath();
-    ctx.moveTo(centerX, point.y * cell + 3);
-    ctx.lineTo(point.x * cell + cell - 3, point.y * cell + cell - 3);
-    ctx.lineTo(point.x * cell + 3, point.y * cell + cell - 3);
+    const radius = cell / 2 - 2;
+    const tip = { x: centerX + direction.x * radius, y: centerY + direction.y * radius };
+    const base = { x: centerX - direction.x * radius, y: centerY - direction.y * radius };
+    const perpendicular = { x: -direction.y * radius * .8, y: direction.x * radius * .8 };
+    ctx.moveTo(tip.x, tip.y);
+    ctx.lineTo(base.x + perpendicular.x, base.y + perpendicular.y);
+    ctx.lineTo(base.x - perpendicular.x, base.y - perpendicular.y);
     ctx.closePath();
     ctx.fill();
   } else {
@@ -303,7 +325,8 @@ soundBtn.addEventListener('click', () => {
   sound = !sound;
   soundBtn.textContent = `SOUND: ${sound ? 'ON' : 'OFF'}`;
   soundBtn.setAttribute('aria-pressed', String(!sound));
-  if (sound) beep(660);
+  if (sound) { beep(660); if (playing && !paused) playBgm(); }
+  else bgm?.pause();
 });
 modeEl.addEventListener('change', () => { if (playing) start(); });
 

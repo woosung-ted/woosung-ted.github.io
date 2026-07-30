@@ -25,7 +25,8 @@
 - 성장: 먹이(byte) 섭취 시 몸길이 +1, 점수 증가
 - 자동 성장: 게임 진행 중 5초마다 몸길이 +1
 - 자기 충돌: 모든 모드에서 본인 몸통과 충돌 시 게임오버
-- 렌더링: 내부 벽과 Snake는 네모 block, 일반 Byte는 원형, Golden Byte는 금색 원형, Frog Coin은 삼각형으로 표시
+- 렌더링: 내부 벽과 Snake body는 네모 block, 일반 Byte는 원형, Golden Byte는 금색 원형, Frog Coin은 삼각형, Snake 머리는 진행 방향을 향하는 빨간색 삼각형으로 표시
+- 배경음악: `assets/blossom.mp3`를 START 후 무한 반복 재생하며, Pause/Game Over/재시작과 SOUND 토글에 맞춰 제어
 
 ## 4. 아이템 & 파워업
 

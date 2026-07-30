@@ -188,11 +188,11 @@ body::before {
 
 ### 8.7 페이지 구성 제안 (Snake Byte 웹사이트)
 
-1. **헤더**: HUD 그리드(1UP/HI/LIVES) 또는 로고 + 네비게이션 버튼(`.btn`, `.btn-b`)
-2. **히어로 섹션**: `<h1>INSERT COIN</h1>` 스타일 타이틀 + PLAY 버튼(`.btn-c`, 가장 눈에 띄는 초록)
-3. **모드 선택 카드**: Freestyle / Level을 `.pixel-box` 카드로 배치, 카드 내부에 대표 스프라이트(conic-gradient 기반 `.sprite` 블록 등) 삽입
-4. **리더보드/설정 모달**: `.pixel-box` + `.input`(닉네임) + `.progress`(레벨 진행도)
-5. **푸터**: 저작권/링크는 `--ink` 톤의 작은 텍스트로 절제, 과도한 네온 사용 자제(피로도 방지)
+1. **Profile**: `Ted the engineer`, `삼성전자 무선 사업부`
+2. **Project**: `SnakeByte`, Game 섹션 앵커 링크
+3. **Game**: `SnakeByte` 게임 영역과 Freestyle / Level 카드
+4. **Contact**: `https://woosung-ted.github.io`
+5. **공통 헤더·푸터**: 로고·내비게이션·GitHub 링크는 레트로 톤으로 유지
 
 ### 8.8 접근성 주의사항
 

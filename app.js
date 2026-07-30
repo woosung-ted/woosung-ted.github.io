@@ -1,20 +1,290 @@
-const canvas=document.querySelector('#game'),ctx=canvas.getContext('2d'),scoreEl=document.querySelector('#score'),coinsEl=document.querySelector('#coins'),hiEl=document.querySelector('#high-score'),statusEl=document.querySelector('#status'),startBtn=document.querySelector('#start'),modeEl=document.querySelector('#mode'),soundBtn=document.querySelector('#sound-toggle'),coinBtn=document.querySelector('#use-coin');
-const size=18,cell=canvas.width/size,dirs={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
-let snake,food,golden,dir,nextDir,score,coins,playing=false,timer,swipeStart,sound=true,audio,speedFactor=1,effectTimer;
-const high=()=>Number(localStorage.getItem('snakebyte-high')||0),save=()=>localStorage.setItem('snakebyte-high',Math.max(high(),score));
-function beep(freq,duration=.08,type='square'){if(!sound)return;audio??=new AudioContext();if(audio.state==='suspended')audio.resume();const o=audio.createOscillator(),g=audio.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(.045,audio.currentTime);g.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);o.connect(g).connect(audio.destination);o.start();o.stop(audio.currentTime+duration)}
-function reset(){clearTimeout(effectTimer);speedFactor=1;snake=[{x:9,y:9},{x:8,y:9},{x:7,y:9}];dir=dirs.right;nextDir=dir;score=coins=0;food=spawn();golden=null;render();updateHud();statusEl.textContent='Arrow keys / WASD / swipe to move.'}
-function spawn(){let p;do{p={x:Math.floor(Math.random()*size),y:Math.floor(Math.random()*size)}}while(snake?.some(s=>s.x===p.x&&s.y===p.y));return p}
-function updateHud(){scoreEl.textContent=score;coinsEl.textContent=coins;hiEl.textContent=high()}
-function start(){clearTimeout(timer);reset();playing=true;startBtn.textContent='RESTART';tick()}
-function tick(){if(!playing)return;timer=setTimeout(()=>{move();tick()},(modeEl.value==='level'?150:120)/speedFactor)}
-function applySpeed(factor,message){clearTimeout(effectTimer);speedFactor=factor;statusEl.textContent=message;effectTimer=setTimeout(()=>{speedFactor=1;if(playing)statusEl.textContent='Arrow keys / WASD / swipe to move.'},5000)}
-function move(){dir=nextDir;let head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};if(modeEl.value==='free'){head.x=(head.x+size)%size;head.y=(head.y+size)%size}else if(head.x<0||head.x>=size||head.y<0||head.y>=size)return over();if(snake.some(s=>s.x===head.x&&s.y===head.y))return over();snake.unshift(head);let ate=head.x===food.x&&head.y===food.y;if(ate){score+=10;beep(520);if(Math.random()<.1){coins++;beep(880,.12,'triangle')}food=spawn();if(Math.random()<.12)golden=spawn()}else snake.pop();if(golden&&head.x===golden.x&&head.y===golden.y){score+=25;golden=null;beep(740,.16,'sawtooth');applySpeed(1.25,'GOLDEN BYTE! SPEED UP')}save();updateHud();render()}
-function over(){playing=false;clearTimeout(timer);beep(110,.25,'sawtooth');statusEl.textContent='GAME OVER — PRESS START';render()}
-function render(){ctx.fillStyle='#10102c';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='rgba(0,229,255,.08)';for(let i=1;i<size;i++){ctx.beginPath();ctx.moveTo(i*cell,0);ctx.lineTo(i*cell,canvas.height);ctx.moveTo(0,i*cell);ctx.lineTo(canvas.width,i*cell);ctx.stroke()}if(food)draw(food,'#ff2d95');if(golden)draw(golden,'#ffd300');snake?.forEach((s,i)=>draw(s,i?'#2bff88':'#00e5ff'))}
-function draw(p,color){ctx.fillStyle=color;ctx.fillRect(p.x*cell+2,p.y*cell+2,cell-4,cell-4)}
-function setDir(name){const d=dirs[name];if(d&&d.x!==-dir.x&&d.y!==-dir.y){nextDir=d;beep(180,.025,'triangle')}}
-document.addEventListener('keydown',e=>{const map={ArrowUp:'up',w:'up',ArrowDown:'down',s:'down',ArrowLeft:'left',a:'left',ArrowRight:'right',d:'right'};if(map[e.key]){e.preventDefault();setDir(map[e.key])}});
-document.querySelectorAll('[data-dir]').forEach(b=>b.addEventListener('click',()=>setDir(b.dataset.dir)));canvas.addEventListener('touchstart',e=>swipeStart=e.touches[0],{passive:true});canvas.addEventListener('touchend',e=>{if(!swipeStart)return;const t=e.changedTouches[0],dx=t.clientX-swipeStart.clientX,dy=t.clientY-swipeStart.clientY;if(Math.max(Math.abs(dx),Math.abs(dy))>20)setDir(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));swipeStart=null},{passive:true});
-startBtn.addEventListener('click',start);coinBtn.addEventListener('click',()=>{if(coins<1){statusEl.textContent='NO FROG COINS';return}coins--;applySpeed(.75,'FROG COIN! SLOW DOWN');beep(300,.12,'triangle');updateHud()});soundBtn.addEventListener('click',()=>{sound=!sound;soundBtn.textContent=`SOUND: ${sound?'ON':'OFF'}`;soundBtn.setAttribute('aria-pressed',String(!sound));if(sound)beep(660)});modeEl.addEventListener('change',()=>{if(playing)start()});
+const canvas = document.querySelector('#game');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.querySelector('#score');
+const coinsEl = document.querySelector('#coins');
+const hiEl = document.querySelector('#high-score');
+const levelEl = document.querySelector('#level');
+const statusEl = document.querySelector('#status');
+const startBtn = document.querySelector('#start');
+const pauseBtn = document.querySelector('#pause');
+const modeEl = document.querySelector('#mode');
+const soundBtn = document.querySelector('#sound-toggle');
+const coinBtn = document.querySelector('#use-coin');
+
+const size = 18;
+const cell = canvas.width / size;
+const dirs = { up: { x: 0, y: -1 }, down: { x: 0, y: 1 }, left: { x: -1, y: 0 }, right: { x: 1, y: 0 } };
+const baseDelay = 150;
+let snake, food, golden, walls, dir, nextDir, score, coins, level;
+let playing = false;
+let paused = false;
+let moveTimer;
+let growthTimer;
+let effectTimer;
+let speedFactor = 1;
+let swipeStart;
+let sound = true;
+let audio;
+
+const high = () => Number(localStorage.getItem('snakebyte-high') || 0);
+const saveHigh = () => localStorage.setItem('snakebyte-high', String(Math.max(high(), score)));
+const same = (a, b) => a.x === b.x && a.y === b.y;
+const blocked = (p) => snake.some((s) => same(s, p)) || walls.some((w) => same(w, p));
+
+function beep(freq, duration = .08, type = 'square') {
+  if (!sound) return;
+  const AudioCtor = window.AudioContext || window.webkitAudioContext;
+  if (!AudioCtor) return;
+  audio ??= new AudioCtor();
+  if (audio.state === 'suspended') audio.resume();
+  const oscillator = audio.createOscillator();
+  const gain = audio.createGain();
+  oscillator.type = type;
+  oscillator.frequency.value = freq;
+  gain.gain.setValueAtTime(.045, audio.currentTime);
+  gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + duration);
+  oscillator.connect(gain).connect(audio.destination);
+  oscillator.start();
+  oscillator.stop(audio.currentTime + duration);
+}
+
+function emptyCell() {
+  let point;
+  do point = { x: Math.floor(Math.random() * size), y: Math.floor(Math.random() * size) };
+  while (blocked(point));
+  return point;
+}
+
+function hasPath(start, target, candidateWalls) {
+  const queue = [start];
+  const seen = new Set([`${start.x},${start.y}`]);
+  while (queue.length) {
+    const point = queue.shift();
+    if (same(point, target)) return true;
+    for (const d of Object.values(dirs)) {
+      const next = { x: point.x + d.x, y: point.y + d.y };
+      const key = `${next.x},${next.y}`;
+      if (next.x < 0 || next.x >= size || next.y < 0 || next.y >= size || seen.has(key)) continue;
+      if (candidateWalls.some((wall) => same(wall, next)) || snake.some((part) => same(part, next))) continue;
+      seen.add(key);
+      queue.push(next);
+    }
+  }
+  return false;
+}
+
+function buildWalls() {
+  if (modeEl.value !== 'level') return [];
+  const count = Math.min(2 + (level - 1) * 2, 30);
+  let safe = [];
+  for (let attempt = 0; attempt < 200; attempt += 1) {
+    const candidate = [];
+    while (candidate.length < count) {
+      const point = { x: Math.floor(Math.random() * size), y: Math.floor(Math.random() * size) };
+      if (!snake.some((part) => same(part, point)) && !same(point, food) && !candidate.some((wall) => same(wall, point))) candidate.push(point);
+    }
+    if (hasPath(snake[0], food, candidate)) {
+      safe = candidate;
+      break;
+    }
+  }
+  return safe;
+}
+
+function updateHud() {
+  scoreEl.textContent = score;
+  coinsEl.textContent = coins;
+  hiEl.textContent = high();
+  levelEl.textContent = level;
+}
+
+function reset() {
+  clearTimeout(moveTimer);
+  clearTimeout(growthTimer);
+  clearTimeout(effectTimer);
+  speedFactor = 1;
+  snake = [{ x: 9, y: 9 }, { x: 8, y: 9 }, { x: 7, y: 9 }];
+  dir = dirs.right;
+  nextDir = dir;
+  score = 0;
+  coins = 0;
+  level = 1;
+  walls = [];
+  food = emptyCell();
+  golden = null;
+  playing = false;
+  paused = false;
+  pauseBtn.disabled = true;
+  pauseBtn.textContent = 'PAUSE';
+  updateHud();
+  render();
+  statusEl.textContent = 'Arrow keys / WASD / swipe to move.';
+}
+
+function start() {
+  reset();
+  playing = true;
+  walls = buildWalls();
+  startBtn.textContent = 'RESTART';
+  pauseBtn.disabled = false;
+  scheduleMove();
+  scheduleGrowth();
+}
+
+function scheduleMove() {
+  clearTimeout(moveTimer);
+  if (!playing || paused) return;
+  const levelFactor = Math.min(2.5, 1 + (level - 1) * .1);
+  moveTimer = setTimeout(() => { move(); scheduleMove(); }, baseDelay / (levelFactor * speedFactor));
+}
+
+function scheduleGrowth() {
+  clearTimeout(growthTimer);
+  if (!playing || paused) return;
+  growthTimer = setTimeout(() => { grow(); scheduleGrowth(); }, 5000);
+}
+
+function grow() {
+  if (!snake.length) return;
+  snake.push({ ...snake[snake.length - 1] });
+  beep(260, .1, 'triangle');
+  statusEl.textContent = 'AUTO GROWTH +1';
+  setTimeout(() => { if (playing && !paused) statusEl.textContent = 'Arrow keys / WASD / swipe to move.'; }, 500);
+  render();
+}
+
+function move() {
+  if (!playing || paused) return;
+  dir = nextDir;
+  const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+  if (modeEl.value === 'free') {
+    head.x = (head.x + size) % size;
+    head.y = (head.y + size) % size;
+  } else if (head.x < 0 || head.x >= size || head.y < 0 || head.y >= size) {
+    return gameOver('WALL HIT — GAME OVER');
+  }
+  if (walls.some((wall) => same(wall, head))) return gameOver('WALL HIT — GAME OVER');
+  if (snake.some((part) => same(part, head))) return gameOver('SELF HIT — GAME OVER');
+
+  snake.unshift(head);
+  const ate = same(head, food);
+  if (ate) {
+    score += 10;
+    beep(520);
+    if (Math.random() < .1) { coins += 1; beep(880, .12, 'triangle'); }
+    food = emptyCell();
+    if (Math.random() < .12) golden = emptyCell();
+    const nextLevel = 1 + Math.floor(score / 50);
+    if (nextLevel !== level) { level = nextLevel; walls = buildWalls(); beep(680, .12, 'triangle'); }
+  } else {
+    snake.pop();
+  }
+  if (golden && same(head, golden)) {
+    score += 25;
+    golden = null;
+    applySpeed(1.25, 'GOLDEN BYTE! SPEED UP');
+    beep(740, .16, 'sawtooth');
+  }
+  saveHigh();
+  updateHud();
+  render();
+}
+
+function applySpeed(factor, message) {
+  clearTimeout(effectTimer);
+  speedFactor = factor;
+  statusEl.textContent = message;
+  effectTimer = setTimeout(() => {
+    speedFactor = 1;
+    if (playing && !paused) statusEl.textContent = 'Arrow keys / WASD / swipe to move.';
+  }, 5000);
+}
+
+function gameOver(message) {
+  playing = false;
+  paused = false;
+  clearTimeout(moveTimer);
+  clearTimeout(growthTimer);
+  pauseBtn.disabled = true;
+  beep(110, .25, 'sawtooth');
+  statusEl.textContent = message;
+  saveHigh();
+  updateHud();
+}
+
+function togglePause() {
+  if (!playing) return;
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'RESUME' : 'PAUSE';
+  statusEl.textContent = paused ? 'PAUSED' : 'Arrow keys / WASD / swipe to move.';
+  if (paused) { clearTimeout(moveTimer); clearTimeout(growthTimer); }
+  else { scheduleMove(); scheduleGrowth(); }
+}
+
+function render() {
+  ctx.fillStyle = '#10102c';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.strokeStyle = 'rgba(0,229,255,.08)';
+  for (let i = 1; i < size; i += 1) {
+    ctx.beginPath();
+    ctx.moveTo(i * cell, 0); ctx.lineTo(i * cell, canvas.height);
+    ctx.moveTo(0, i * cell); ctx.lineTo(canvas.width, i * cell);
+    ctx.stroke();
+  }
+  walls.forEach((wall) => draw(wall, '#7c1dfd'));
+  if (food) draw(food, '#ff2d95');
+  if (golden) draw(golden, '#ffd300');
+  snake.forEach((part, index) => draw(part, index ? '#2bff88' : '#00e5ff'));
+}
+
+function draw(point, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(point.x * cell + 2, point.y * cell + 2, cell - 4, cell - 4);
+}
+
+function setDirection(name) {
+  const next = dirs[name];
+  if (next && next.x !== -nextDir.x && next.y !== -nextDir.y) {
+    nextDir = next;
+    beep(180, .025, 'triangle');
+  }
+}
+
+document.addEventListener('keydown', (event) => {
+  const key = event.key.length === 1 ? event.key.toLowerCase() : event.key;
+  const map = { ArrowUp: 'up', w: 'up', ArrowDown: 'down', s: 'down', ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ' ': 'pause' };
+  if (map[key]) {
+    event.preventDefault();
+    if (map[key] === 'pause') togglePause(); else setDirection(map[key]);
+  }
+});
+
+document.querySelectorAll('[data-dir]').forEach((button) => button.addEventListener('click', () => setDirection(button.dataset.dir)));
+canvas.addEventListener('touchstart', (event) => { swipeStart = event.touches[0]; }, { passive: true });
+canvas.addEventListener('touchend', (event) => {
+  if (!swipeStart) return;
+  const touch = event.changedTouches[0];
+  const dx = touch.clientX - swipeStart.clientX;
+  const dy = touch.clientY - swipeStart.clientY;
+  if (Math.max(Math.abs(dx), Math.abs(dy)) > 20) setDirection(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up'));
+  swipeStart = null;
+}, { passive: true });
+
+startBtn.addEventListener('click', start);
+pauseBtn.addEventListener('click', togglePause);
+coinBtn.addEventListener('click', () => {
+  if (coins < 1) { statusEl.textContent = 'NO FROG COINS'; return; }
+  coins -= 1;
+  applySpeed(.75, 'FROG COIN! SLOW DOWN');
+  beep(300, .12, 'triangle');
+  updateHud();
+});
+soundBtn.addEventListener('click', () => {
+  sound = !sound;
+  soundBtn.textContent = `SOUND: ${sound ? 'ON' : 'OFF'}`;
+  soundBtn.setAttribute('aria-pressed', String(!sound));
+  if (sound) beep(660);
+});
+modeEl.addEventListener('change', () => { if (playing) start(); });
+
 reset();

@@ -2,12 +2,12 @@
 
 ## 범위와 확인 결과
 
-- 목표: 정적 HTML/CSS/JavaScript 기반 반응형 웹사이트 + 프로젝트·기술 소개 + 상단 `Games` 메뉴 + 키보드/모바일 터치 지렁이 게임
+- 목표: 정적 HTML/CSS/JavaScript 기반 반응형 웹사이트 + Profile·Project·Game·Contact 4단 구성 + 키보드/모바일 터치 지렁이 게임
 - 저장소: `https://github.com/woosung-ted/woosung-ted.github.io.git`
 - 배포 주소: `https://woosung-ted.github.io`
 - 디자인: `GAME.md`의 8-Bit Arcade 레트로 시스템 우선 적용
 - 현재 확인된 자료: `GAME.md`만 있음
-- 프로필: `Ted the engineer`로 간단 공개
+- 프로필: `Ted the engineer` / `삼성전자 무선 사업부`로 간단 공개
 - 공개 콘텐츠: `Ted the engineer` 프로필 + 프로젝트·기술 소개
 - 프로젝트·기술: HTML5 / CSS / JavaScript
 - 공개 프로젝트: `SnakeByte`만 소개
@@ -22,7 +22,7 @@
 | 루프 | 입력 | Act | Observe | 통과 기준 | 위험도 | HITL | 첫 루프 적합성 |
 |---|---|---|---|---|---|---|---|
 | 1. 요구사항·자료 확정 | `GAME.md`, 저장소 구조, `Ted the engineer`, SnakeByte, HTML5/CSS/JavaScript | 프로필·프로젝트·기술 소개와 확장 게임 범위 확정 | 누락 정보와 상충 요구 | SnakeByte만 공개, 간단 프로필만 공개, 비밀정보 제외 | 낮음 | 불필요 | **추천** |
-| 2. 정적 사이트 골격 | 루프 1 확정안 | `index.html`, 공통 CSS, 기본 JS, 반응형 레이아웃 작성 | 데스크톱/모바일 레이아웃 | 주요 섹션·내비게이션·포커스 이동 정상 | 중간 | 선택: 시안 확인 | 아니오 |
+| 2. 정적 사이트 골격 | 루프 1 확정안 | `index.html`, 공통 CSS, 기본 JS, Profile·Project·Game·Contact 4단 반응형 레이아웃 작성 | 데스크톱/모바일 레이아웃 | 4개 섹션·내비게이션·포커스 이동 정상 | 중간 | 선택: 시안 확인 | 아니오 |
 | 3. 레트로 UI 적용 | `GAME.md` 색상·타이포·컴포넌트 규칙 | CSS 변수, 픽셀 박스, 버튼, HUD 스타일 적용 | 대비·가독성·축소 화면 | 레트로 톤 유지, 키보드 포커스 표시, reduced motion 대응 | 중간 | 필요: 브랜드 톤 확인 | 아니오 |
 | 4. 프로필 콘텐츠 연결 | `Ted the engineer` | 간단 프로필 표시 | 공개 범위·문구 확인 | 표시명만 공개, 불필요한 개인정보 없음 | 낮음 | 불필요 | 아니오 |
 | 5. 게임 코어 MVP | Freestyle/Level, 4방향 조작 | Canvas, 무한 Level, 단계당 속도 +10%(최대 2.5배), 외부·내부 랜덤 벽, 경로 보장, 5초마다 길이 +1, 먹이·점수·충돌·wrap/벽 규칙 구현 | 키보드, 스와이프, D-Pad 입력 | Freestyle wrap, Level 무한 진행·속도 단계·레벨 비례 벽·경로 보장, 5초 자동 성장 재현 가능. Battle 제외 | 높음 | 필요: 게임 규칙 확인 | 아니오 |
@@ -39,8 +39,9 @@
 
 - 게임 1차 출시 범위: Freestyle/Level(무한 속도 단계·외부/내부 랜덤 벽·레벨 비례 벽·이동 경로 보장·벽 충돌·5초마다 길이 +1) + Golden Byte(속도 증가 25%·5초) + Frog Coin(먹이당 10% 랜덤 획득·사용 시 속도 감소 25%·5초, 코인 수 초기화 허용) + 기본 레트로 테마 1개 + `localStorage`; Battle 제외
 
-## 다음 작업 경계
+## 현재 결과와 다음 작업 경계
 
-- 이번 단계에서 코드 수정, 테스트, push, 배포하지 않음
-- 다음 루프 시작 전 공개 프로젝트는 `SnakeByte`, 설명은 `Old retro funny game`, GitHub 링크는 공개, 기술은 HTML5/CSS/JavaScript로 고정. 게임 확률·효과 지속시간은 기본값으로 확정. 프로필 표시명은 `Ted the engineer`로 고정
-- 토큰은 인증이 필요한 Git 작업 때만 사용하며, 값은 출력·로그·코드·문서·Git에 남기지 않음
+- 구현·로컬 검증 완료: Claude `claude-sonnet-5` PASS, HTTP 200, 375/768/1440px overflow 없음, 시작·일시정지·재개·모바일 D-pad 확인.
+- 4단 구성은 Profile(`Ted the engineer`, 삼성전자 무선 사업부)·Project(`SnakeByte`→Game 링크)·Game(`SnakeByte`)·Contact(`https://woosung-ted.github.io`)로 고정. 기술은 HTML5/CSS/JavaScript, GitHub 링크는 공개.
+- 현재 상태: `DEPLOY_APPROVAL_REQUIRED`; 사용자 승인 전 commit·push·배포 금지.
+- 토큰은 인증이 필요한 Git 작업 때만 사용하며, 값은 출력·로그·코드·문서·Git에 남기지 않음.

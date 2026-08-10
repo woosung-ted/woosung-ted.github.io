@@ -1,7 +1,7 @@
 --------------------------------------------------
 [Privacy Policy]
 
-woosung values your personal information and complies with relevant data protection laws.
+Gaegulsoft values your personal information and complies with relevant data protection laws.
 
 1. Collection and Use of Personal Information
 This application (DupRemove) does not directly collect, store, or transmit any personal information of users.
